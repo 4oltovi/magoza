@@ -7,7 +7,7 @@
 - Next.js + TypeScript
 - Prisma ORM
 - MySQL
-- REST API (марҳилаҳои баъдӣ)
+- REST API
 
 ## Оғози маҳаллӣ
 
@@ -25,17 +25,36 @@ npm run dev
 
 ## MySQL
 
-Намунаи пайвастшавӣ:
-
 ```env
 DATABASE_URL="mysql://USER:PASSWORD@HOST:3306/sokhtmon_bokhtar"
 ```
 
-Пеш аз `db:push` базаи `sokhtmon_bokhtar`-ро дар MySQL созед ё ба корбари дорои иҷозаи сохтани база пайваст шавед.
+## API
+
+| Method | Endpoint | Вазифа |
+|---|---|---|
+| GET | `/api/products` | Каталоги тасдиқшуда; `search`, `category`, `page`, `limit` дастгирӣ мешавад |
+| GET | `/api/categories` | Категорияҳои фаъол |
+| GET | `/api/settings/public` | Танзимоти оммавӣ ва маълумоти пардохт |
+| POST | `/api/orders` | Сохтани фармоиш ва пардохти дастӣ |
+| GET | `/api/orders/status?orderNumber=...&phone=...` | Санҷиши ҳолати фармоиш |
+
+Намунаи сохтани фармоиш:
+
+```json
+{
+  "buyerName": "Номи харидор",
+  "buyerPhone": "+992900000000",
+  "deliveryAddress": "Бохтар, кӯчаи намунавӣ",
+  "storeId": "STORE_ID",
+  "paymentMethod": "CARD_TRANSFER",
+  "items": [{ "productId": "PRODUCT_ID", "quantity": 2 }]
+}
+```
 
 ## Додаҳои намунавӣ
 
-`npm run db:seed` администратор, фурӯшанда, як мағоза, категорияҳо, маҳсулот ва танзимоти ибтидоиро месозад. Рақами пардохтҳо placeholder мебошанд ва бояд дар муҳити воқеӣ иваз шаванд.
+`npm run db:seed` администратор, фурӯшанда, як мағоза, категорияҳо, маҳсулот ва танзимоти ибтидоиро месозад. Рақамҳои пардохт placeholder мебошанд ва бояд дар муҳити воқеӣ иваз шаванд.
 
 ## Қайд
 
