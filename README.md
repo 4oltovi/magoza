@@ -14,7 +14,6 @@
 ```bash
 npm install
 cp .env.example .env
-# DATABASE_URL-ро бо маълумоти воқеии MySQL пур кунед
 npm run db:generate
 npm run db:push
 npm run db:seed
@@ -23,39 +22,30 @@ npm run dev
 
 Суроғаи пешфарз: `http://localhost:3000`
 
-## MySQL
-
-```env
-DATABASE_URL="mysql://USER:PASSWORD@HOST:3306/sokhtmon_bokhtar"
-```
-
 ## API
 
 | Method | Endpoint | Вазифа |
 |---|---|---|
-| GET | `/api/products` | Каталоги тасдиқшуда; `search`, `category`, `page`, `limit` дастгирӣ мешавад |
+| GET | `/api/products` | Каталоги тасдиқшуда |
 | GET | `/api/categories` | Категорияҳои фаъол |
-| GET | `/api/settings/public` | Танзимоти оммавӣ ва маълумоти пардохт |
-| POST | `/api/orders` | Сохтани фармоиш ва пардохти дастӣ |
-| GET | `/api/orders/status?orderNumber=...&phone=...` | Санҷиши ҳолати фармоиш |
+| GET | `/api/settings/public` | Танзимоти оммавӣ |
+| POST | `/api/orders` | Сохтани фармоиш |
+| GET | `/api/orders/status?orderNumber=...&phone=...` | Ҳолати фармоиш |
+| POST | `/api/orders/receipt` | Боркунии расид, JPG/PNG/PDF то 5MB |
+| GET/POST | `/api/admin/payments` | Рӯйхат ва тасдиқ/рад кардани пардохт бо `x-admin-key` |
 
-Намунаи сохтани фармоиш:
+## Саҳифаҳо
 
-```json
-{
-  "buyerName": "Номи харидор",
-  "buyerPhone": "+992900000000",
-  "deliveryAddress": "Бохтар, кӯчаи намунавӣ",
-  "storeId": "STORE_ID",
-  "paymentMethod": "CARD_TRANSFER",
-  "items": [{ "productId": "PRODUCT_ID", "quantity": 2 }]
-}
+- `/` — каталог, сабад ва checkout
+- `/payment` — боркунии расиди пардохт
+- `/admin` — панели санҷиши пардохтҳо
+
+## Танзими администратор
+
+Дар `.env` калиди воқеӣ гузоред:
+
+```env
+ADMIN_PANEL_KEY="a-long-random-secret"
 ```
 
-## Додаҳои намунавӣ
-
-`npm run db:seed` администратор, фурӯшанда, як мағоза, категорияҳо, маҳсулот ва танзимоти ибтидоиро месозад. Рақамҳои пардохт placeholder мебошанд ва бояд дар муҳити воқеӣ иваз шаванд.
-
-## Қайд
-
-Branch-и корӣ: `feature/sokhtmon-bokhtar-mvp`.
+Калидро ба GitHub ё ба браузер ҳамчун маълумоти доимӣ нагузоред. Барои production нигоҳдории расид дар Object Storage тавсия мешавад; ҳоло MVP расидро ҳамчун маълумоти дохили MySQL нигоҳ медорад.
