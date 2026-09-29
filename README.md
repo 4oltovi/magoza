@@ -32,13 +32,20 @@ npm run dev
 | POST | `/api/orders` | Сохтани фармоиш |
 | GET | `/api/orders/status?orderNumber=...&phone=...` | Ҳолати фармоиш |
 | POST | `/api/orders/receipt` | Боркунии расид, JPG/PNG/PDF то 5MB |
-| GET/POST | `/api/admin/payments` | Рӯйхат ва тасдиқ/рад кардани пардохт бо `x-admin-key` |
+| GET/POST | `/api/admin/payments` | Рӯйхат ва тасдиқ/рад кардани пардохт |
+| GET/POST/PATCH | `/api/admin/products` | Идоракунии маҳсулот |
+| GET/PATCH | `/api/admin/stores` | Идоракунии мағозаҳо |
+| GET | `/api/admin/catalog` | Рӯйхати мағозаҳо ва категорияҳо |
+| POST/DELETE | `/api/admin/auth` | Сохтан ва нест кардани session-и админ |
 
 ## Саҳифаҳо
 
 - `/` — каталог, сабад ва checkout
 - `/payment` — боркунии расиди пардохт
+- `/admin/login` — воридшавии администратор
 - `/admin` — панели санҷиши пардохтҳо
+- `/admin/products` — идоракунии маҳсулот
+- `/admin/stores` — идоракунии мағозаҳо
 
 ## Танзими администратор
 
@@ -48,4 +55,6 @@ npm run dev
 ADMIN_PANEL_KEY="a-long-random-secret"
 ```
 
-Калидро ба GitHub ё ба браузер ҳамчун маълумоти доимӣ нагузоред. Барои production нигоҳдории расид дар Object Storage тавсия мешавад; ҳоло MVP расидро ҳамчун маълумоти дохили MySQL нигоҳ медорад.
+Сессияи администратор бо cookie-и `httpOnly`, муҳлати 8 соат ва имзои HMAC сохта мешавад. Дар production калиди дарозу тасодуфӣ истифода баред ва онро ба GitHub нагузоред. Барои санҷиши дохилии MVP endpoint-ҳои идоракунӣ ҳоло `x-admin-key`-ро истифода мебаранд; пеш аз production бояд ба session пурра гузаранд.
+
+Барои production нигоҳдории расид дар Object Storage тавсия мешавад; ҳоло MVP расидро ҳамчун маълумоти дохили MySQL нигоҳ медорад.
