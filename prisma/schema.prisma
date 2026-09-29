@@ -146,7 +146,7 @@ model Payment {
 
 model Setting {
   id        String   @id @default(cuid())
-  `key`     String   @unique
+  settingKey String  @unique
   value     String   @db.Text
   isPublic  Boolean  @default(false)
   updatedAt DateTime @updatedAt
