@@ -1,0 +1,5 @@
+import { NextResponse } from "next/server";
+import { OrderStatus, PaymentStatus } from "@prisma/client";
+import { isAdminSessionValid } from "@/lib/admin-auth";
+import { prisma } from "@/lib/prisma";
+export async function GET(){if(!(await isAdminSessionValid()))return NextResponse.json({error:"Дастрасӣ манъ аст."},{status:401});const [orders,revenue,stores,products,pendingPayments,byStatus]=await prisma.$transaction([prisma.order.count(),prisma.order.aggregate({_sum:{total:true},where:{status:{in:[OrderStatus.PAYMENT_CONFIRMED,OrderStatus.ACCEPTED,OrderStatus.PREPARING,OrderStatus.ASSIGNED_DELIVERY,OrderStatus.DELIVERING,OrderStatus.DELIVERED]}}}),prisma.store.count({where:{status:"APPROVED"}}),prisma.product.count({where:{isActive:true,isApproved:true}}),prisma.payment.count({where:{status:PaymentStatus.UNDER_REVIEW}}),prisma.order.groupBy({by:["status"],_count:{_all:true}})]);return NextResponse.json({stats:{orders,revenue:revenue._sum.total??0,stores,products,pendingPayments},byStatus});}
