@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -137,10 +137,10 @@ model Payment {
   receiptUrl  String?
   receiptName String?
   receiptMime String?
-  receiptData String?       @db.Text
+  receiptData String?       @db.LongText
   reviewedBy  String?
   reviewedAt  DateTime?
-  note        String?       @db.Text
+  note        String?        @db.Text
   order       Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
   reviewer    User?         @relation("PaymentReviewer", fields: [reviewedBy], references: [id])
   createdAt   DateTime      @default(now())
@@ -159,8 +159,8 @@ model AuditLog {
   id        String   @id @default(cuid())
   userId    String?
   action    String
-  entity    String
   entityId  String?
+  entity    String
   metadata  String?  @db.Text
   user      User?    @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
