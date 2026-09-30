@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -137,7 +137,7 @@ model Payment {
   receiptUrl  String?
   receiptName String?
   receiptMime String?
-  receiptData String?       @db.LongText
+  receiptData String?       @db.Text
   reviewedBy  String?
   reviewedAt  DateTime?
   note        String?       @db.Text
