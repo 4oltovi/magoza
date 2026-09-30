@@ -6,7 +6,7 @@
 
 - Next.js + TypeScript
 - Prisma ORM
-- PostgreSQL
+- MySQL
 - REST API
 
 ## Оғози маҳаллӣ
@@ -24,10 +24,10 @@ npm run dev
 
 Суроғаи пешфарз: `http://localhost:3000`
 
-## PostgreSQL
+## MySQL
 
 ```env
-DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/sokhtmon_bokhtar?schema=public"
+DATABASE_URL="mysql://USER:PASSWORD@HOST:3306/sokhtmon_bokhtar"
 ```
 
 ## API
@@ -72,4 +72,4 @@ ADMIN_PANEL_KEY="a-long-random-secret"
 
 ## Пардохт ва расид
 
-Пардохт тавассути интиқол ба корт ё рақами телефон анҷом мешавад. Расидҳои JPG, PNG ва PDF то 5MB қабул мешаванд. Барои production нигоҳдории расид дар Object Storage тавсия мешавад; ҳоло MVP онро дар PostgreSQL нигоҳ медорад.
+Пардохт тавассути интиқол ба корт ё рақами телефон анҷом мешавад. Расидҳои JPG, PNG ва PDF то 5MB қабул мешаванд. Барои production нигоҳдории расид дар Object Storage тавсия мешавад; ҳоло MVP онро дар MySQL нигоҳ медорад.
