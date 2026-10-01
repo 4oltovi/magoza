@@ -1,0 +1,8 @@
+import { NextRequest, NextResponse } from "next/server";
+import { isAdminSessionValid } from "@/lib/admin-auth";
+import { writeAdminAudit } from "@/lib/admin-audit";
+import { prisma } from "@/lib/prisma";
+const editable=["PLATFORM_NAME","PAYMENT_CARD_NUMBER","PAYMENT_PHONE_NUMBER","DELIVERY_FEE","CONTACT_PHONE","TELEGRAM_USERNAME"] as const;
+function error(message:string,status=400){return NextResponse.json({error:message},{status});}
+export async function GET(){if(!(await isAdminSessionValid()))return error("Дастрасӣ манъ аст.",401);const rows=await prisma.setting.findMany({where:{settingKey:{in:[...editable]}}});return NextResponse.json({settings:Object.fromEntries(rows.map(row=>[row.settingKey,row.value]))});}
+export async function PATCH(request:NextRequest){if(!(await isAdminSessionValid()))return error("Дастрасӣ манъ аст.",401);const body=await request.json().catch(()=>null) as Record<string,unknown>|null;const updates=Object.fromEntries(editable.filter(key=>typeof body?.[key]==="string").map(key=>[key,String(body?.[key]).trim()]));if(!Object.keys(updates).length)return error("Ягон танзимот пешниҳод нашуд.");if("DELIVERY_FEE" in updates&&(!/^\d+(\.\d{1,2})?$/.test(updates.DELIVERY_FEE)||Number(updates.DELIVERY_FEE)<0))return error("Ҳаққи расондан нодуруст аст.");await prisma.$transaction(Object.entries(updates).map(([settingKey,value])=>prisma.setting.upsert({where:{settingKey},update:{value,isPublic:true},create:{settingKey,value,isPublic:true}})));await writeAdminAudit("SETTINGS_UPDATED","Setting",undefined,{keys:Object.keys(updates)});return NextResponse.json({ok:true,settings:updates});}
