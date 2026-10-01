@@ -24,13 +24,21 @@ export default function Home() {
   const [orderNumber, setOrderNumber] = useState("");
   const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(true);
+  const [deliveryFee, setDeliveryFee] = useState(20);
+  const [platformName, setPlatformName] = useState("Сохтмон Бохтар");
 
   useEffect(() => {
-    fetch("/api/products?limit=100")
-      .then((response) => response.ok ? response.json() : Promise.reject(new Error("API unavailable")))
-      .then((data) => {
-        const mapped = (data.items ?? []).map((item: { id: string; name: string; price: string | number; unit: string; storeId: string; store?: { name?: string }; category?: { name?: string } }) => ({ id: item.id, name: item.name, category: item.category?.name ?? "Бе категория", price: Number(item.price), unit: item.unit, store: item.store?.name ?? "Мағоза", storeId: item.storeId, emoji: "🧱" }));
+    Promise.all([
+      fetch("/api/products?limit=100").then((response) => response.ok ? response.json() : Promise.reject(new Error("Products unavailable"))),
+      fetch("/api/settings/public").then((response) => response.ok ? response.json() : { settings: {} }),
+    ])
+      .then(([productData, settingsData]) => {
+        const mapped = (productData.items ?? []).map((item: { id: string; name: string; price: string | number; unit: string; storeId: string; store?: { name?: string }; category?: { name?: string } }) => ({ id: item.id, name: item.name, category: item.category?.name ?? "Бе категория", price: Number(item.price), unit: item.unit, store: item.store?.name ?? "Мағоза", storeId: item.storeId, emoji: "🧱" }));
         if (mapped.length) setProducts(mapped);
+        const publicSettings = settingsData.settings ?? {};
+        const configuredFee = Number(publicSettings.DELIVERY_FEE);
+        if (Number.isFinite(configuredFee) && configuredFee >= 0) setDeliveryFee(configuredFee);
+        if (typeof publicSettings.PLATFORM_NAME === "string" && publicSettings.PLATFORM_NAME.trim()) setPlatformName(publicSettings.PLATFORM_NAME.trim());
       })
       .catch(() => setNotice("Ҳоло маълумоти намунавӣ нишон дода мешавад."))
       .finally(() => setLoading(false));
@@ -39,13 +47,9 @@ export default function Home() {
   const categories = ["Ҳама", ...Array.from(new Set(products.map((product) => product.category)))];
   const filtered = useMemo(() => products.filter((product) => (category === "Ҳама" || product.category === category) && `${product.name} ${product.store}`.toLowerCase().includes(query.toLowerCase())), [products, query, category]);
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const deliveryFee = 20;
   const total = subtotal + deliveryFee;
 
-  function add(product: Product) {
-    setCart((items) => { const existing = items.find((item) => item.id === product.id); return existing ? items.map((item) => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item) : [...items, { ...product, quantity: 1 }]; });
-    setNotice(`${product.name} ба сабад илова шуд`);
-  }
+  function add(product: Product) { setCart((items) => { const existing = items.find((item) => item.id === product.id); return existing ? items.map((item) => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item) : [...items, { ...product, quantity: 1 }]; }); setNotice(`${product.name} ба сабад илова шуд`); }
   function changeQuantity(id: string, delta: number) { setCart((items) => items.flatMap((item) => item.id === id ? (item.quantity + delta > 0 ? [{ ...item, quantity: item.quantity + delta }] : []) : [item])); }
   async function submitOrder(event: React.FormEvent) {
     event.preventDefault();
@@ -57,12 +61,12 @@ export default function Home() {
     setOrderNumber(data.order.orderNumber); setCart([]); setCheckout(false); setNotice("Фармоиш қабул шуд. Акнун маблағро интиқол диҳед.");
   }
 
-  return <main><header className="header"><div className="brand"><span className="brandMark">С</span><div><b>Сохтмон Бохтар</b><small>Бозори масолеҳи сохтмонӣ</small></div></div><button className="cart" onClick={() => setCheckout(true)}>🛒 Сабад ({cart.reduce((sum, item) => sum + item.quantity, 0)})</button></header>
+  return <main><header className="header"><div className="brand"><span className="brandMark">С</span><div><b>{platformName}</b><small>Бозори масолеҳи сохтмонӣ</small></div></div><button className="cart" onClick={() => setCheckout(true)}>🛒 Сабад ({cart.reduce((sum, item) => sum + item.quantity, 0)})</button></header>
     <section className="hero"><div><span className="eyebrow">БОХТАР · ТОҶИКИСТОН</span><h1>Ҳамаи чиз барои сохтмон, дар як ҷо.</h1><p>Маҳсулоти мағозаҳои Бохтарро пайдо кунед ва фармоиш диҳед.</p><div className="search"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Маҳсулот ё мағозаро ҷустуҷӯ кунед" /></div></div><div className="heroArt">🏠<span>+</span>🧱</div></section>
     <section className="section"><div className="sectionHead"><div><span className="eyebrow">КАТАЛОГ</span><h2>Маҳсулоти пешниҳодшуда</h2></div><span className="count">{loading ? "..." : `${filtered.length} маҳсулот`}</span></div><div className="chips">{categories.map((item) => <button key={item} className={category === item ? "chip active" : "chip"} onClick={() => setCategory(item)}>{item}</button>)}</div><div className="grid">{filtered.map((product) => <article className="card" key={product.id}><div className="productVisual">{product.emoji}</div><div className="cardBody"><span className="category">{product.category}</span><h3>{product.name}</h3><p className="store">● {product.store}</p><div className="priceRow"><strong>{product.price.toLocaleString("tg-TJ")} сомонӣ</strong><span>/ {product.unit}</span></div><button className="add" onClick={() => add(product)}>Ба сабад илова кардан <span>+</span></button></div></article>)}</div>{!filtered.length && <div className="empty">Маҳсулот ёфт нашуд.</div>}</section>
     {orderNumber && <section className="orderNotice"><b>Фармоиши шумо: {orderNumber}</b><span>Маблағи фармоишро ба рақами пардохти маъмур интиқол дода, расидро нигоҳ доред.</span></section>}
-    <footer><b>Сохтмон Бохтар</b><span>Платформаи маҳаллии масолеҳи сохтмонӣ · © 2026</span><span>Бохтар, Тоҷикистон</span></footer>
-    {checkout && <div className="modalBackdrop" onClick={() => setCheckout(false)}><section className="checkout" onClick={(event) => event.stopPropagation()}><button className="close" onClick={() => setCheckout(false)}>×</button><h2>Сабад ва фармоиш</h2>{cart.length ? <><div className="cartLines">{cart.map((item) => <div className="cartLine" key={item.id}><span>{item.name}<small>{item.price} сомонӣ / {item.unit}</small></span><div><button onClick={() => changeQuantity(item.id, -1)}>−</button><b>{item.quantity}</b><button onClick={() => changeQuantity(item.id, 1)}>+</button></div></div>)}</div><div className="summary"><span>Маҳсулот: {subtotal.toLocaleString("tg-TJ")} сомонӣ</span><span>Расондан: {deliveryFee} сомонӣ</span><b>Ҳамагӣ: {total.toLocaleString("tg-TJ")} сомонӣ</b></div><form onSubmit={submitOrder}><input required placeholder="Номи пурра" value={form.buyerName} onChange={(event) => setForm({ ...form, buyerName: event.target.value })} /><input required placeholder="Телефон: +992..." value={form.buyerPhone} onChange={(event) => setForm({ ...form, buyerPhone: event.target.value })} /><input required placeholder="Суроғаи расондан дар Бохтар" value={form.deliveryAddress} onChange={(event) => setForm({ ...form, deliveryAddress: event.target.value })} /><textarea placeholder="Шарҳ ба фармоиш" value={form.deliveryNote} onChange={(event) => setForm({ ...form, deliveryNote: event.target.value })} /><button className="submit" type="submit">Тасдиқи фармоиш</button></form></> : <div className="empty">Сабад холӣ аст.</div>}</section></div>}
+    <footer><b>{platformName}</b><span>Платформаи маҳаллии масолеҳи сохтмонӣ · © 2026</span><span>Бохтар, Тоҷикистон</span></footer>
+    {checkout && <div className="modalBackdrop" onClick={() => setCheckout(false)}><section className="checkout" onClick={(event) => event.stopPropagation()}><button className="close" onClick={() => setCheckout(false)}>×</button><h2>Сабад ва фармоиш</h2>{cart.length ? <><div className="cartLines">{cart.map((item) => <div className="cartLine" key={item.id}><span>{item.name}<small>{item.price} сомонӣ / {item.unit}</small></span><div><button type="button" onClick={() => changeQuantity(item.id, -1)}>−</button><b>{item.quantity}</b><button type="button" onClick={() => changeQuantity(item.id, 1)}>+</button></div></div>)}</div><div className="summary"><span>Маҳсулот: {subtotal.toLocaleString("tg-TJ")} сомонӣ</span><span>Расондан: {deliveryFee} сомонӣ</span><b>Ҳамагӣ: {total.toLocaleString("tg-TJ")} сомонӣ</b></div><form onSubmit={submitOrder}><input required placeholder="Номи пурра" value={form.buyerName} onChange={(event) => setForm({ ...form, buyerName: event.target.value })} /><input required placeholder="Телефон: +992..." value={form.buyerPhone} onChange={(event) => setForm({ ...form, buyerPhone: event.target.value })} /><input required placeholder="Суроғаи расондан дар Бохтар" value={form.deliveryAddress} onChange={(event) => setForm({ ...form, deliveryAddress: event.target.value })} /><textarea placeholder="Шарҳ ба фармоиш" value={form.deliveryNote} onChange={(event) => setForm({ ...form, deliveryNote: event.target.value })} /><button className="submit" type="submit">Тасдиқи фармоиш</button></form></> : <div className="empty">Сабад холӣ аст.</div>}</section></div>}
     {notice && <div className="toast" onClick={() => setNotice("")}>✓ {notice}</div>}
   </main>;
 }
