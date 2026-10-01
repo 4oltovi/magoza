@@ -73,3 +73,17 @@ ADMIN_PANEL_KEY="a-long-random-secret"
 ## Пардохт ва расид
 
 Пардохт тавассути интиқол ба корт ё рақами телефон анҷом мешавад. Расидҳои JPG, PNG ва PDF то 5MB қабул мешаванд. Барои production нигоҳдории расид дар Object Storage тавсия мешавад; ҳоло MVP онро дар MySQL нигоҳ медорад.
+
+## Ҳолати MVP
+
+Қисмҳои асосӣ омодаанд: каталог, ҷустуҷӯ, категорияҳо, сабад, checkout, фармоиш, ҳаққи расондан аз танзимоти MySQL, боркунии расид, санҷиши админ, идоракунии маҳсулот ва мағозаҳо, dashboard, status-и фармоишҳо, audit log ва session-и администратор.
+
+Пеш аз production дар муҳити дорои MySQL бояд ин санҷишҳо иҷро шаванд:
+
+```bash
+npm run db:generate
+npm run db:push
+npm run db:seed
+npm run type-check
+npm run build
+```
